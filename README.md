@@ -1,7 +1,8 @@
 # Found Familiar
 
-A cozy, local-only personal organizer: To-do, Health and Journal tabs around one shared calendar.
+A local-only personal organizer: To-do, Health and Journal tabs around one shared calendar.
 React + Vite + TypeScript. Data lives in your browser's IndexedDB. No backend, accounts or analytics.
+im highkey just practicing mobile dev but i have no space so i am NOT doing android studio
 
 ## Run it (Windows + VS Code)
 
