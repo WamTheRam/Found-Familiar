@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Found Familiar owl">
+  <rect width="128" height="128" rx="28" fill="#3d5a47"/>
+  <path d="M30 34 L40 54 L22 52 Z M98 34 L88 54 L106 52 Z" fill="#6b4a2f"/>
+  <ellipse cx="64" cy="74" rx="38" ry="40" fill="#8a6540"/>
+  <ellipse cx="64" cy="88" rx="24" ry="26" fill="#efe3c8"/>
+  <path d="M52 80 q4 4 8 0 M68 80 q4 4 8 0 M56 94 q4 4 8 0 M64 104 q4 4 8 0" stroke="#c9b48a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="48" cy="58" r="15" fill="#f7f0de" stroke="#6b4a2f" stroke-width="3"/>
+  <circle cx="80" cy="58" r="15" fill="#f7f0de" stroke="#6b4a2f" stroke-width="3"/>
+  <circle cx="50" cy="59" r="8" fill="#2f3a2f"/>
+  <circle cx="78" cy="59" r="8" fill="#2f3a2f"/>
+  <circle cx="52.5" cy="56" r="2.6" fill="#fff"/>
+  <circle cx="80.5" cy="56" r="2.6" fill="#fff"/>
+  <path d="M59 68 L69 68 L64 78 Z" fill="#c8a24a"/>
+  <path d="M27 72 q-6 22 8 34 q2 -18 4 -30 Z M101 72 q6 22 -8 34 q-2 -18 -4 -30 Z" fill="#6b4a2f"/>
+  <path d="M52 112 l-4 8 M58 112 l-1 8 M70 112 l1 8 M76 112 l4 8" stroke="#c8a24a" stroke-width="3" stroke-linecap="round"/>
+</svg>
