@@ -93,3 +93,8 @@ const monthFmt = new Intl.DateTimeFormat('en-GB', {
 
 export const formatLong = (s: DateStr) => longFmt.format(new Date(toUtc(s)));
 export const formatMonthYear = (s: DateStr) => monthFmt.format(new Date(toUtc(s)));
+
+const shortFmt = new Intl.DateTimeFormat('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
+});
+export const formatShort = (s: DateStr) => shortFmt.format(new Date(toUtc(s)));

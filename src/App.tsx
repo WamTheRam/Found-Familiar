@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Calendar } from './components/Calendar';
 import { Logo } from './components/Logo';
 import { Tabs } from './components/Tabs';
-import { HealthTab, JournalTab, TodoTab } from './tabs/Placeholders';
+import { HealthTab, JournalTab } from './tabs/Placeholders';
+import { TodoTab } from './tabs/TodoTab';
 import { useApp } from './state';
 
 export function App() {
@@ -19,7 +20,7 @@ export function App() {
     <div className="app">
       <header className="app-head">
         <Logo />
-        <h1 className="brand">Found Familiar</h1>
+        <h1 className="brand">familiar</h1>
       </header>
       <Calendar />
       <Tabs />
