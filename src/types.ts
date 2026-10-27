@@ -4,6 +4,9 @@ export type DateStr = string;
 export type TaskStatus = 'todo' | 'working' | 'done';
 export type TabId = 'todo' | 'health' | 'journal';
 
+/** Weekdays are 0 = Monday ... 6 = Sunday. */
+export type Repeat = { type: 'daily' } | { type: 'weekly'; days: number[] };
+
 export interface Task {
   id: string;
   title: string;
@@ -11,7 +14,11 @@ export interface Task {
   tag?: string;
   dueTime?: string; // HH:mm
   date: DateStr;
+  /** For repeating tasks: `date` is the start date and `status` is unused. */
   status: TaskStatus;
+  repeat?: Repeat;
+  /** For repeating tasks: status of each individual day, keyed by YYYY-MM-DD. */
+  occurrenceStatus?: Record<DateStr, TaskStatus>;
   createdAt: number;
   updatedAt: number;
 }

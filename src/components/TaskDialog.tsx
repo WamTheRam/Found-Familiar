@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useApp } from '../state';
 import { newId } from '../lib/id';
-import { STATUS_LABEL } from '../lib/tasks';
-import type { DateStr, Task, TaskStatus } from '../types';
+import { weekdayIndex } from '../lib/dates';
+import { STATUS_LABEL, WEEKDAY_FULL, WEEKDAY_SHORT } from '../lib/tasks';
+import type { DateStr, Repeat, Task, TaskStatus } from '../types';
+
+type RepeatMode = 'none' | 'daily' | 'weekly';
 
 interface Props {
   task?: Task;
@@ -18,7 +21,16 @@ export function TaskDialog({ task, defaultDate, onClose }: Props) {
   const [tag, setTag] = useState(task?.tag ?? '');
   const [dueTime, setDueTime] = useState(task?.dueTime ?? '');
   const [date, setDate] = useState<DateStr>(task?.date ?? defaultDate);
-  const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo');
+  const [status, setStatus] = useState<TaskStatus>(
+    task?.repeat ? task.occurrenceStatus?.[task.date] ?? 'todo' : task?.status ?? 'todo',
+  );
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>(task?.repeat?.type ?? 'none');
+  const [repeatDays, setRepeatDays] = useState<number[]>(
+    task?.repeat?.type === 'weekly' ? task.repeat.days : [weekdayIndex(task?.date ?? defaultDate)],
+  );
+  const repeating = repeatMode !== 'none';
+  const toggleDay = (i: number) =>
+    setRepeatDays((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +49,13 @@ export function TaskDialog({ task, defaultDate, onClose }: Props) {
     e.preventDefault();
     if (!title.trim()) { setError('Give the task a title.'); return; }
     if (!date) { setError('Choose a date.'); return; }
+    if (repeatMode === 'weekly' && repeatDays.length === 0) { setError('Choose at least one weekday.'); return; }
+    const repeat: Repeat | undefined = repeatMode === 'daily' ? { type: 'daily' }
+      : repeatMode === 'weekly' ? { type: 'weekly', days: [...repeatDays].sort((a, b) => a - b) }
+      : undefined;
+    // Keep per-day history even if repeating is later switched off, so nothing is lost.
+    const occurrenceStatus = { ...(task?.occurrenceStatus ?? {}) };
+    if (repeat && !task?.repeat && status !== 'todo') occurrenceStatus[date] = status;
     const now = Date.now();
     const next: Task = {
       id: task?.id ?? newId(),
@@ -45,7 +64,9 @@ export function TaskDialog({ task, defaultDate, onClose }: Props) {
       tag: tag.trim() || undefined,
       dueTime: dueTime || undefined,
       date,
-      status,
+      status: repeat ? 'todo' : status,
+      repeat,
+      occurrenceStatus: Object.keys(occurrenceStatus).length ? occurrenceStatus : undefined,
       createdAt: task?.createdAt ?? now,
       updatedAt: now,
     };
@@ -83,21 +104,40 @@ export function TaskDialog({ task, defaultDate, onClose }: Props) {
           </label>
         </div>
         <div className="field-row">
-          <label className="field">Date
+          <label className="field">{repeating ? 'Starts on' : 'Date'}
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </label>
-          <label className="field">Status
-            <select value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)}>
-              {(Object.keys(STATUS_LABEL) as TaskStatus[]).map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-            </select>
-          </label>
+          {!repeating && (
+            <label className="field">Status
+              <select value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)}>
+                {(Object.keys(STATUS_LABEL) as TaskStatus[]).map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+              </select>
+            </label>
+          )}
         </div>
+
+        <label className="field">Repeat
+          <select value={repeatMode} onChange={(e) => setRepeatMode(e.target.value as RepeatMode)}>
+            <option value="none">Does not repeat</option>
+            <option value="daily">Every day</option>
+            <option value="weekly">Every week on selected days</option>
+          </select>
+        </label>
+        {repeatMode === 'weekly' && (
+          <div className="weekdays" role="group" aria-label="Repeat on these weekdays">
+            {WEEKDAY_SHORT.map((label, i) => (
+              <button key={label} type="button" className={`weekday${repeatDays.includes(i) ? ' is-on' : ''}`}
+                aria-pressed={repeatDays.includes(i)} aria-label={WEEKDAY_FULL[i]} onClick={() => toggleDay(i)}>{label}</button>
+            ))}
+          </div>
+        )}
+        {repeating && <p className="hint-left">Each day is ticked off separately. Change a day’s status from the board.</p>}
 
         {error && <p className="form-error" role="alert">{error}</p>}
 
         {confirming ? (
           <div className="confirm" role="alertdialog" aria-label="Confirm delete">
-            <p>Delete “{task?.title}”? This cannot be undone.</p>
+            <p>Delete “{task?.title}”?{task?.repeat ? ' This removes every repeat of it.' : ''} This cannot be undone.</p>
             <div className="btn-row">
               <button type="button" className="btn" onClick={() => setConfirming(false)} disabled={busy}>Keep task</button>
               <button type="button" className="btn btn-danger" onClick={remove} disabled={busy}>Delete task</button>

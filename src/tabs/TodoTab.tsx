@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TaskDialog } from '../components/TaskDialog';
 import { formatShort } from '../lib/dates';
-import { carriedOver, countDone, filterByStatus, sortTasks, STATUS_LABEL, tasksForDate, type StatusFilter } from '../lib/tasks';
+import { carriedOver, countDone, describeRepeat, filterByStatus, sortTasks, STATUS_LABEL, tasksForDate, type StatusFilter } from '../lib/tasks';
 import { useApp } from '../state';
 import type { DateStr, Task, TaskStatus } from '../types';
 
@@ -22,7 +22,7 @@ interface RowProps {
 function TaskRow({ task, from, onEdit, onStatus }: RowProps) {
   const done = task.status === 'done';
   const working = task.status === 'working';
-  const meta = [task.tag, task.dueTime && `Due ${task.dueTime}`, from && `From ${formatShort(from)}`].filter(Boolean).join(' · ');
+  const meta = [task.tag, task.repeat && describeRepeat(task.repeat), task.dueTime && `Due ${task.dueTime}`, from && `From ${formatShort(from)}`].filter(Boolean).join(' · ');
   return (
     <li className={`task${done ? ' is-done' : ''}`}>
       <button type="button" role="checkbox" aria-checked={done} className="check"
@@ -54,12 +54,17 @@ export function TodoTab() {
 
   async function setStatus(task: Task, status: TaskStatus) {
     setActionError(null);
-    try { await saveTask({ ...task, status, updatedAt: Date.now() }); }
+    // Repeating tasks keep one status per day; one-off tasks keep a single status.
+    const base = tasks.find((x) => x.id === task.id) ?? task;
+    const next: Task = base.repeat
+      ? { ...base, occurrenceStatus: { ...base.occurrenceStatus, [selectedDate]: status }, updatedAt: Date.now() }
+      : { ...base, status, updatedAt: Date.now() };
+    try { await saveTask(next); }
     catch { setActionError('Could not save that change. Your browser may be blocking local storage.'); }
   }
 
   const row = (t: Task, from?: DateStr) => (
-    <TaskRow key={t.id} task={t} from={from} onEdit={() => setDialog({ task: t })} onStatus={(s) => setStatus(t, s)} />
+    <TaskRow key={t.id} task={t} from={from} onEdit={() => setDialog({ task: tasks.find((x) => x.id === t.id) ?? t })} onStatus={(s) => setStatus(t, s)} />
   );
   const section = (key: TaskStatus) => {
     const list = visible.filter((t) => t.status === key);
@@ -72,8 +77,6 @@ export function TodoTab() {
     );
   };
 
-  const nothingShown = visible.length === 0 && carried.length === 0;
-
   return (
     <div className="panel">
       <h2 className="panel-title">Your daily pursuits</h2>
@@ -83,7 +86,7 @@ export function TodoTab() {
       {actionError && <p className="form-error" role="alert">{actionError}</p>}
 
       <div className="progress-card" aria-live="polite">
-        <span>{dayTasks.length ? 'Small steps count.' : 'Nothing pinned for this day yet.'}</span>
+        <span>Small steps count.</span>
         <span className="progress-num">{done} of {dayTasks.length} done</span>
         <div className="bar" aria-hidden="true"><div style={{ width: dayTasks.length ? `${(done / dayTasks.length) * 100}%` : 0 }} /></div>
       </div>
@@ -99,6 +102,10 @@ export function TodoTab() {
         <>
           {section('working')}
           {section('todo')}
+          {dayTasks.length === 0 && <p className="empty-text">No tasks today.</p>}
+          {dayTasks.length > 0 && visible.length === 0 && carried.length === 0 && (
+            <p className="empty-text">No {STATUS_LABEL[filter as TaskStatus].toLowerCase()} tasks here.</p>
+          )}
           {carried.length > 0 && (
             <section className="task-section" aria-label="Carried over">
               <h3>Carried over <span className="count">{carried.length}</span></h3>
@@ -106,12 +113,6 @@ export function TodoTab() {
             </section>
           )}
           {section('done')}
-          {nothingShown && (
-            <div className="empty">
-              <img src="/owl.png" width={56} height={56} alt="" className="logo-img" />
-              <p>{filter === 'all' ? 'The board is clear for this day.' : `No ${STATUS_LABEL[filter as TaskStatus].toLowerCase()} tasks here.`}</p>
-            </div>
-          )}
         </>
       )}
 

@@ -101,3 +101,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .confirm { background: #f6e6e1; border-radius: 12px; padding: 12px; }
 .confirm p { margin: 0 0 10px; }
 .confirm .btn-row { justify-content: flex-end; }
+
+/* Empty text, repeat controls */
+.empty-text { text-align: center; color: var(--muted); margin: 18px 0 6px; }
+.weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.weekday { min-height: 40px; padding: 0; border-radius: 10px; border: 1px solid var(--line); background: #fff; font-size: 12px; }
+.weekday.is-on { background: var(--forest); border-color: var(--forest); color: #fff; font-weight: 600; }
+.hint-left { margin: 0; font-size: 12px; color: var(--muted); }

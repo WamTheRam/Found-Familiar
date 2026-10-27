@@ -30,7 +30,8 @@ function DayButton({ date, muted, marker }: { date: DateStr; muted?: boolean; ma
 
 export function Calendar() {
   const { selectedDate, setSelectedDate, monthOpen, setMonthOpen, tasks } = useApp();
-  const markers = useMemo(() => taskMarkers(tasks), [tasks]);
+  const visible = useMemo(() => (monthOpen ? monthGrid(selectedDate).flat() : weekDays(selectedDate)), [monthOpen, selectedDate]);
+  const markers = useMemo(() => taskMarkers(tasks, visible), [tasks, visible]);
   const touchY = useRef<number | null>(null);
   const step = monthOpen ? (n: number) => addMonths(selectedDate, n) : (n: number) => addDays(selectedDate, 7 * n);
 
