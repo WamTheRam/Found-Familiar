@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Calendar } from './components/Calendar';
 import { Logo } from './components/Logo';
-import { Tabs } from './components/Tabs';
-import { HealthTab, JournalTab } from './tabs/Placeholders';
+import { TabShortcuts, Tabs } from './components/Tabs';
+import { HealthTab } from './tabs/HealthTab';
+import { JournalTab } from './tabs/JournalTab';
 import { TodoTab } from './tabs/TodoTab';
 import { useApp } from './state';
 
 export function App() {
-  const { tab, repo } = useApp();
+  const { tab, repo, monthOpen } = useApp();
   const [storage, setStorage] = useState('Checking local storage…');
 
   useEffect(() => {
@@ -23,12 +24,18 @@ export function App() {
         <h1 className="brand">familiar</h1>
       </header>
       <Calendar />
-      <Tabs />
-      <main id="tab-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="content">
-        {tab === 'todo' && <TodoTab />}
-        {tab === 'health' && <HealthTab />}
-        {tab === 'journal' && <JournalTab />}
-      </main>
+      {monthOpen ? (
+        <TabShortcuts />
+      ) : (
+        <>
+          <Tabs />
+          <main id="tab-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="content">
+            {tab === 'todo' && <TodoTab />}
+            {tab === 'health' && <HealthTab />}
+            {tab === 'journal' && <JournalTab />}
+          </main>
+        </>
+      )}
       <footer className="app-foot">
         <span>A little progress, every day.</span>
         <small>{storage}</small>

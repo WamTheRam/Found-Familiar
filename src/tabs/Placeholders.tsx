@@ -16,5 +16,4 @@ function Placeholder({ title, line, stage }: { title: string; line: string; stag
   );
 }
 
-export const HealthTab = () => <Placeholder title="Build your strength" line="A steady rhythm, not a race." stage="Stage 3" />;
 export const JournalTab = () => <Placeholder title="A moment to reflect" line="No perfect words needed. Just yours." stage="Stage 4" />;

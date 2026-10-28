@@ -98,3 +98,9 @@ const shortFmt = new Intl.DateTimeFormat('en-GB', {
   weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
 });
 export const formatShort = (s: DateStr) => shortFmt.format(new Date(toUtc(s)));
+
+/** Jump to another month/year, keeping the day of the month where possible (clamped to the month's length). */
+export function setMonthYear(s: DateStr, year: number, month: number): DateStr {
+  const { d } = parseDateStr(s);
+  return toDateStr(year, month, Math.min(d, daysInMonth(year, month)));
+}
