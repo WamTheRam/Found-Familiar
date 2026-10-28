@@ -32,17 +32,21 @@ Other commands: `npm test` (unit tests), `npm run typecheck`, `npm run build` (p
 - There is no backup or sync. Do not rely on this app as your only copy of anything important, including photos.
 - Journal photos are downscaled (longest side 1600 px) and saved as JPEG to save space.
 
-## Packaging for Android with Capacitor (prepared, not yet tested)
+## Android APK without Android Studio (GitHub Actions)
 
-`capacitor.config.json` and the app icon (`public/icon-512.png`) are ready. Nothing Capacitor-related is installed by default, so the web app stays light.
+The workflow `.github/workflows/android-debug-apk.yml` builds a debug APK on GitHub's servers. Nothing Android-related is installed on your PC.
 
-1. Add Capacitor: `npm install @capacitor/core @capacitor/cli @capacitor/android`
-2. Build the web app: `npm run build`
-3. Create the Android project: `npx cap add android`, then after later web changes `npm run build` and `npx cap sync android`
+1. Push the project to a GitHub repository (a **private** one is recommended, see below).
+2. Open the repository's **Actions** tab, choose **Build Android debug APK**, and press **Run workflow**. It also runs on every push to `main`/`master`.
+3. When the run finishes (about 5-10 minutes), open it and download **found-familiar-debug-apk** from *Artifacts*. Unzip it to get `app-debug.apk`.
+4. Copy the APK to your phone, open it, and allow "install unknown apps" for the app you opened it from.
 
-Turning the Android project into an installable APK needs the Android SDK and Gradle build tools. The usual way to get them is Android Studio. Command-line SDK tools also work, but that setup is outside this project. Until then, the web app can run in a phone browser on your Wi-Fi.
+How it works: Node 22 and Java 21 are installed, `npm run build` creates `dist/`, then `npx cap add android` creates the Android project (or `cap sync` if an `android/` folder is already committed) and Gradle builds the debug APK. The whole web app is bundled inside the APK, so ordinary use needs no server and no internet connection.
 
-Data access goes through the repository interface in `src/data/repository.ts`, so a native storage implementation could replace IndexedDB later without changing the screens.
+- Versions: Capacitor 8.5.3 (pinned), Node 22, Java 21, Gradle 8.14.3 and Android Gradle Plugin 8.13 (from Capacitor's template), compile SDK 36, minimum Android 7.0 (API 24).
+- `android-overrides/` holds the owl launcher icons, a plain parchment launch background, and a fixed debug signing key. The key is not a secret and is not for publishing: it only lets a new build update the installed app instead of conflicting with it.
+- The APK is debug-signed. It is fine for your own phone, but not for the Play Store.
+- Data lives inside the app on the phone. It is separate from the browser version's data, and uninstalling the app erases it. Install new builds over the old one (do not uninstall first).
 
 ## Structure
 
@@ -50,3 +54,4 @@ Data access goes through the repository interface in `src/data/repository.ts`, s
 - `src/data/`: IndexedDB schema (`db.ts`) and the repository interface the UI uses
 - `src/state.tsx`: shared selected date, active tab, calendar mode, tasks, journal and workout split
 - `src/components/`, `src/tabs/`: screens
+- `.github/workflows/`, `android-overrides/`, `capacitor.config.json`: Android build
